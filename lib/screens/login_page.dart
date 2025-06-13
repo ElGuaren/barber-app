@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'pagina_inicio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'pagina_inicio.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,14 +13,69 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  bool _mostrarContrasena = false;
+  bool _mostrarClave = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _iniciarSesionEmail() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      _mostrarMensaje("Completa todos los campos");
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const PantallaInicio()),
+      );
+    } on FirebaseAuthException catch (e) {
+      _mostrarMensaje("Error: ${e.message}");
+    }
+  }
+
+  Future<void> _iniciarSesionGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        return; // Usuario canceló
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const PantallaInicio()),
+      );
+    } catch (e) {
+      _mostrarMensaje("Error al iniciar sesión con Google: $e");
+    }
+  }
+
+  void _mostrarMensaje(String texto) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(texto)),
+    );
   }
 
   @override
@@ -36,16 +92,11 @@ class _LoginPageState extends State<LoginPage> {
                 const Icon(Icons.account_box, size: 64, color: Colors.blue),
                 const SizedBox(height: 16),
                 const Text(
-                  "Inicio de Sesion",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
+                  "Inicio de Sesión",
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue),
                 ),
                 const SizedBox(height: 32),
 
-                // Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -54,53 +105,32 @@ class _LoginPageState extends State<LoginPage> {
                     prefixIcon: const Icon(Icons.email),
                     filled: true,
                     fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      borderSide: BorderSide.none,
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // Contraseña con ícono de visibilidad
                 TextField(
                   controller: _passwordController,
-                  obscureText: !_mostrarContrasena,
+                  obscureText: !_mostrarClave,
                   decoration: InputDecoration(
                     labelText: "Contraseña",
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _mostrarContrasena
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _mostrarContrasena = !_mostrarContrasena;
-                        });
-                      },
+                      icon: Icon(_mostrarClave ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setState(() => _mostrarClave = !_mostrarClave),
                     ),
                     filled: true,
                     fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      borderSide: BorderSide.none,
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // Botón de login
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: () {
-                      fnIniciarSesion(
-                        _emailController.text,
-                        _passwordController.text,
-                      );
-                    },
+                    onPressed: _iniciarSesionEmail,
                     icon: const Icon(Icons.login),
                     label: const Text("Iniciar sesión"),
                     style: FilledButton.styleFrom(
@@ -110,17 +140,25 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+                const Text("O también", style: TextStyle(color: Colors.black54)),
 
-                // Link a registro
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/register');
-                  },
-                  child: const Text(
-                    "¿No tienes cuenta?, Regístrate",
-                    style: TextStyle(color: Colors.blue),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: _iniciarSesionGoogle,
+                  icon: const Icon(Icons.login),
+                  label: const Text("Continuar con Google"),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                   ),
+                ),
+
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
+                  child: const Text("¿No tienes cuenta? Regístrate"),
                 ),
               ],
             ),
@@ -128,38 +166,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
-
-  Future<void> fnIniciarSesion(String email, String password) async {
-    if (email.trim().isEmpty || password.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Por favor, completa todos los campos"),
-          backgroundColor: Colors.blue,
-        ),
-      );
-      return;
-    }
-
-    try {
-      final credential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PantallaInicio()),
-      );
-    } on FirebaseAuthException catch (e) {
-      String mensaje = 'Ocurrió un error';
-      if (e.code == 'user-not-found') {
-        mensaje = 'No existe un usuario con ese correo';
-      } else if (e.code == 'wrong-password') {
-        mensaje = 'Contraseña incorrecta';
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mensaje), backgroundColor: Colors.red),
-      );
-    }
   }
 }

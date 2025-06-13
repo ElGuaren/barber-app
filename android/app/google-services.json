@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "250423593022-rrvhbhufk33v0m0ka25cgp1roa6i15m9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.barber_app",
+            "certificate_hash": "68c4ef642bd7859e1dcadad73e7ab913762dad09"
+          }
+        },
+        {
           "client_id": "250423593022-ifut8kl5ic6bipr47ptennttgbohsvv3.apps.googleusercontent.com",
           "client_type": 3
         }

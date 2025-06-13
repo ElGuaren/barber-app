@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'pantalla_reserva.dart';
 
 class PantallaLocales extends StatelessWidget {
   const PantallaLocales({super.key});
@@ -7,8 +8,14 @@ class PantallaLocales extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Fondo blanco para mejor contraste
       appBar: AppBar(
-        title: const Text('Locales'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white, // Color del texto e íconos
+        title: const Text(
+          'Locales',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -38,14 +45,23 @@ class PantallaLocales extends StatelessWidget {
                   child: ListTile(
                     leading: const CircleAvatar(
                       backgroundColor: Colors.blue,
-                      child: Icon(Icons.build, color: Colors.white),
+                      child: Icon(Icons.storefront, color: Colors.white),
                     ),
                     title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(descripcion),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
-                      // Aquí podrías abrir el detalle del local o calendario de horas
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PantallaReservaHoras(
+                            localId: local.id,
+                            nombreLocal: nombre,
+                          ),
+                        ),
+                      );
                     },
+
                   ),
                 );
               },

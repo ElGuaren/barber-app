@@ -2,69 +2,124 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'pantalla_perfil.dart';
 import 'pantalla_locales.dart';
+import 'pantalla_mis_reservas.dart';
 
-class PantallaInicio extends StatelessWidget {
+class PantallaInicio extends StatefulWidget {
   const PantallaInicio({super.key});
 
-  void _cerrarSesion(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacementNamed(context, '/');
-  }
+  @override
+  State<PantallaInicio> createState() => _PantallaInicioState();
+}
 
-  void _irAlPerfil(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const PantallaPerfil()),
-    );
-  }
+class _PantallaInicioState extends State<PantallaInicio> {
+  int _paginaActual = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bienvenido!'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            tooltip: 'Perfil de usuario',
-            onPressed: () => _irAlPerfil(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
-            onPressed: () => _cerrarSesion(context),
-          ),
+      appBar: _construirAppBar(),
+      body: _construirContenido(),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _paginaActual,
+        onTap: (index) => setState(() => _paginaActual = index),
+        selectedItemColor: Colors.blue,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Reservas'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 24),
-            _opcionCard(
-              icono: Icons.calendar_today,
-              titulo: 'Agendar horas',
-              subtitulo: 'Schedule appointments',
-              onTap: () {Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const PantallaLocales()),
-  );},
-            ),
-            const SizedBox(height: 20),
-            _opcionCard(
-              icono: Icons.location_on,
-              titulo: 'Locales cercanos',
-              subtitulo: 'Nearby locations',
-              onTap: () {},
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _opcionCard({
+  PreferredSizeWidget? _construirAppBar() {
+    switch (_paginaActual) {
+      case 0:
+        return AppBar(
+          title: const Text('Bienvenido!'),
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Cerrar sesión',
+              onPressed: _cerrarSesion,
+            ),
+          ],
+        );
+      case 1:
+        return AppBar(
+          title: const Text('Mis reservas'),
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+        );
+      case 2:
+        return AppBar(
+          title: const Text('Perfil'),
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+        );
+      default:
+        return null;
+    }
+  }
+
+  Widget _construirContenido() {
+    switch (_paginaActual) {
+      case 0:
+        return const _InicioContenido();
+      case 1:
+        return const PantallaMisReservas();
+      case 2:
+        return const PantallaPerfil();
+      default:
+        return const _InicioContenido();
+    }
+  }
+
+  void _cerrarSesion() async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/');
+    }
+  }
+}
+
+class _InicioContenido extends StatelessWidget {
+  const _InicioContenido();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
+          _opcionCard(
+            icono: Icons.calendar_today,
+            titulo: 'Agendar horas',
+            subtitulo: 'Schedule appointments',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PantallaLocales()),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          _opcionCard(
+            icono: Icons.location_on,
+            titulo: 'Locales cercanos',
+            subtitulo: 'Nearby locations',
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _opcionCard({
     required IconData icono,
     required String titulo,
     required String subtitulo,
