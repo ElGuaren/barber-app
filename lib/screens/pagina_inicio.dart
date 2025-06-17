@@ -47,26 +47,35 @@ class _PantallaInicioState extends State<PantallaInicio> {
   }
 
   PreferredSizeWidget? _construirAppBar() {
-    return AppBar(
-      title: Text(
-        _paginaActual == 0
-            ? 'APPBarber!'
-            : _paginaActual == 1
-                ? 'Mis reservas'
-                : 'Perfil',
-      ),
-      backgroundColor: const Color(0xFF212121),
-      foregroundColor: Colors.white,
-      actions: _paginaActual == 0
-          ? [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                tooltip: 'Cerrar sesión',
-                onPressed: _confirmarCerrarSesion,
-              ),
-            ]
-          : null,
-    );
+    switch (_paginaActual) {
+      case 0:
+        return AppBar(
+          title: const Text('APPBarber!'),
+          backgroundColor: const Color(0xFF212121),
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Cerrar sesión',
+              onPressed: _cerrarSesion,
+            ),
+          ],
+        );
+      case 1:
+        return AppBar(
+          title: const Text('Mis reservas'),
+          backgroundColor: const Color(0xFF212121),
+          foregroundColor: Colors.white,
+        );
+      case 2:
+        return AppBar(
+          title: const Text('Perfil'),
+          backgroundColor: const Color(0xFF212121),
+          foregroundColor: Colors.white,
+        );
+      default:
+        return null;
+    }
   }
 
   Widget _construirContenido() {
@@ -82,31 +91,35 @@ class _PantallaInicioState extends State<PantallaInicio> {
     }
   }
 
-  void _confirmarCerrarSesion() {
-    showDialog(
+  void _cerrarSesion() async {
+    final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Cerrar sesión"),
-        content: const Text("¿Estás seguro de que deseas cerrar sesión?"),
+        content: const Text("¿Estás seguro que deseas cerrar sesión?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text("Cancelar"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC89B65)),
-            onPressed: () async {
-              Navigator.pop(context); // cerrar diálogo
-              await FirebaseAuth.instance.signOut();
-              if (mounted) {
-                Navigator.pushReplacementNamed(context, '/');
-              }
-            },
-            child: const Text("Cerrar sesión", style: TextStyle(color: Colors.white)),
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFC89B65),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Cerrar sesión"),
           ),
         ],
       ),
     );
+
+    if (confirmar == true) {
+      await FirebaseAuth.instance.signOut();
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
+    }
   }
 }
 
@@ -118,13 +131,11 @@ class _InicioContenido extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 24),
           _opcionCard(
             icono: Icons.calendar_today,
             titulo: 'Agendar horas',
-            subtitulo: 'Schedule appointments',
+            subtitulo: 'Agenda tu hora en los locales disponibles!',
             onTap: () {
               Navigator.push(
                 context,
@@ -136,7 +147,7 @@ class _InicioContenido extends StatelessWidget {
           _opcionCard(
             icono: Icons.location_on,
             titulo: 'Locales cercanos',
-            subtitulo: 'Nearby locations',
+            subtitulo: 'Localiza los locales más cercanos!',
             onTap: () {},
           ),
         ],
@@ -154,30 +165,32 @@ class _InicioContenido extends StatelessWidget {
       onTap: onTap,
       child: Card(
         color: Colors.white,
-        elevation: 2,
+        elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
+        child: Container(
+          width: double.infinity,
+          height: 160,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icono, size: 40, color: Color(0xFFC89B65)),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    titulo,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF212121),
-                    ),
-                  ),
-                  Text(
-                    subtitulo,
-                    style: const TextStyle(color: Color(0xFF2C2C2C)),
-                  ),
-                ],
+              Text(
+                titulo,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF212121),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitulo,
+                style: const TextStyle(fontSize: 14, color: Color(0xFF707070)),
+              ),
+              const Spacer(),
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Icon(icono, size: 40, color: Color(0xFFC89B65)),
               )
             ],
           ),
