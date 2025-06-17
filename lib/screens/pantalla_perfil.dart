@@ -10,18 +10,34 @@ class PantallaPerfil extends StatefulWidget {
 }
 
 class _PantallaPerfilState extends State<PantallaPerfil> {
-  String? nombreUsuario;
   final user = FirebaseAuth.instance.currentUser;
+  String? nombreUsuario;
+  bool editando = false;
+  final TextEditingController _nombreController = TextEditingController();
 
   Future<void> cargarNombre() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('usuarios')
-        .doc(user?.uid)
-        .get();
+    final doc = await FirebaseFirestore.instance.collection('usuarios').doc(user?.uid).get();
     if (doc.exists) {
       setState(() {
         nombreUsuario = doc['nombre'];
+        _nombreController.text = nombreUsuario!;
       });
+    }
+  }
+
+  Future<void> guardarNombre() async {
+    final nuevoNombre = _nombreController.text.trim();
+    if (nuevoNombre.isNotEmpty && user != null) {
+      await FirebaseFirestore.instance.collection('usuarios').doc(user!.uid).update({
+        'nombre': nuevoNombre,
+      });
+      setState(() {
+        nombreUsuario = nuevoNombre;
+        editando = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nombre actualizado correctamente')),
+      );
     }
   }
 
@@ -29,6 +45,12 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   void initState() {
     super.initState();
     cargarNombre();
+  }
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    super.dispose();
   }
 
   @override
@@ -43,10 +65,35 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
             children: [
               const Icon(Icons.account_circle, size: 100, color: Colors.grey),
               const SizedBox(height: 16),
-              Text(
-                nombreUsuario ?? 'Cargando...',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
+              editando
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _nombreController,
+                            decoration: const InputDecoration(labelText: 'Nombre'),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: guardarNombre,
+                          icon: const Icon(Icons.check, color: Colors.green),
+                        )
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          nombreUsuario ?? 'Nombre no disponible',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          onPressed: () => setState(() => editando = true),
+                          icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
+                        )
+                      ],
+                    ),
               const SizedBox(height: 8),
               Text(
                 user?.email ?? 'Correo no disponible',

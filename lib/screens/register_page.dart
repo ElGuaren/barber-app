@@ -49,7 +49,6 @@ class _RegisterPageState extends State<RegisterPage> {
         password: password,
       );
 
-      // Guardar nombre en Firestore usando UID como ID
       await FirebaseFirestore.instance.collection('usuarios').doc(cred.user!.uid).set({
         'nombre': nombre,
         'email': email,
@@ -64,129 +63,138 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _mostrarMensaje(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.blue),
+      SnackBar(content: Text(msg), backgroundColor: const Color(0xFFC89B65)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              children: [
-                const Icon(Icons.account_circle, size: 64, color: Colors.blue),
-                const SizedBox(height: 16),
-                const Text('Registrar Usuario',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue)),
-                const SizedBox(height: 32),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/fondo_barberia.jpg',
+            fit: BoxFit.cover,
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const Icon(Icons.account_circle, size: 64, color: Color(0xFFC89B65)),
+                    const SizedBox(height: 16),
+                    const Text('Registrar Usuario',
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF212121))),
+                    const SizedBox(height: 32),
 
-                // Campo nombre
-                TextField(
-                  controller: _nombreController,
-                  decoration: InputDecoration(
-                    labelText: 'Nombre completo',
-                    prefixIcon: const Icon(Icons.person),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Correo
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Correo electrónico',
-                    prefixIcon: const Icon(Icons.email),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Contraseña
-                TextField(
-                  controller: _passwordController,
-                  obscureText: !_verPassword,
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(_verPassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _verPassword = !_verPassword),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Confirmar contraseña
-                TextField(
-                  controller: _confirmarPasswordController,
-                  obscureText: !_verConfirmar,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmar contraseña',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(_verConfirmar ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _verConfirmar = !_verConfirmar),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(50),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: fnRegistrarUsuario,
-                    icon: const Icon(Icons.login),
-                    label: const Text("Registrar"),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                    TextField(
+                      controller: _nombreController,
+                      decoration: InputDecoration(
+                        labelText: 'Nombre completo',
+                        prefixIcon: const Icon(Icons.person),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Correo electrónico',
+                        prefixIcon: const Icon(Icons.email),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: !_verPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Contraseña',
+                        prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(_verPassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _verPassword = !_verPassword),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: _confirmarPasswordController,
+                      obscureText: !_verConfirmar,
+                      decoration: InputDecoration(
+                        labelText: 'Confirmar contraseña',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(_verConfirmar ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _verConfirmar = !_verConfirmar),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: fnRegistrarUsuario,
+                        icon: const Icon(Icons.login),
+                        label: const Text("Registrar"),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFFC89B65),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "¿Ya tienes cuenta? Inicia sesión",
+                        style: TextStyle(color: Color(0xFF212121)),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context); // ← volver al login
-                  },
-                  child: const Text(
-                    "¿Ya tienes cuenta? Inicia sesión",
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

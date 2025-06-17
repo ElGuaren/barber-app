@@ -48,13 +48,9 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _iniciarSesionGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return;
 
-      if (googleUser == null) {
-        return; // Usuario canceló
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -73,97 +69,117 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _mostrarMensaje(String texto) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(texto)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.account_box, size: 64, color: Colors.blue),
-                const SizedBox(height: 16),
-                const Text(
-                  "Inicio de Sesión",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue),
-                ),
-                const SizedBox(height: 32),
-
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: "Correo electrónico",
-                    prefixIcon: const Icon(Icons.email),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: BorderSide.none),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                TextField(
-                  controller: _passwordController,
-                  obscureText: !_mostrarClave,
-                  decoration: InputDecoration(
-                    labelText: "Contraseña",
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(_mostrarClave ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () => setState(() => _mostrarClave = !_mostrarClave),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/fondo_barberia.jpg',
+            fit: BoxFit.cover,
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const Icon(Icons.account_circle, size: 64, color: Color(0xFFC89B65)),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Inicio de Sesión",
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF212121)),
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: BorderSide.none),
-                  ),
-                ),
-                const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _iniciarSesionEmail,
-                    icon: const Icon(Icons.login),
-                    label: const Text("Iniciar sesión"),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: "Correo electrónico",
+                        prefixIcon: const Icon(Icons.email),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                    const SizedBox(height: 16),
 
-                const SizedBox(height: 12),
-                const Text("O también", style: TextStyle(color: Colors.black54)),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: !_mostrarClave,
+                      decoration: InputDecoration(
+                        labelText: "Contraseña",
+                        prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(_mostrarClave ? Icons.visibility : Icons.visibility_off),
+                          onPressed: () => setState(() => _mostrarClave = !_mostrarClave),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                const SizedBox(height: 12),
-                FilledButton.icon(
-                  onPressed: _iniciarSesionGoogle,
-                  icon: const Icon(Icons.login),
-                  label: const Text("Continuar con Google"),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                  ),
-                ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _iniciarSesionEmail,
+                        icon: const Icon(Icons.login),
+                        label: const Text("Iniciar sesión"),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFFC89B65),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text("O también", style: TextStyle(color: Colors.black54)),
+                    const SizedBox(height: 12),
 
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/register'),
-                  child: const Text("¿No tienes cuenta? Regístrate"),
+                    FilledButton.icon(
+                      onPressed: _iniciarSesionGoogle,
+                      icon: const Icon(Icons.login),
+                      label: const Text("Continuar con Google"),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF212121),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/register'),
+                      child: const Text("¿No tienes cuenta? Regístrate"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/recuperar'),
+                      child: const Text("¿Olvidaste tu contraseña?"),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

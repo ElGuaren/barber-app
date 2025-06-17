@@ -11,49 +11,72 @@ class PantallaMisReservas extends StatelessWidget {
 
     if (uid == null) {
       return const Scaffold(
-        body: Center(child: Text("Usuario no autenticado")),
+        backgroundColor: Color(0xFF2C2C2C),
+        body: Center(
+          child: Text(
+            "Usuario no autenticado",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       );
     }
 
     return Scaffold(
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(uid)
-            .collection('reservas')
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      backgroundColor: const Color(0xFF2C2C2C),
+      body: Column(
+        children: [
+          const Divider(height: 1, color: Color(0xFFBDBDBD)),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('usuarios')
+                  .doc(uid)
+                  .collection('reservas')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFFC89B65)));
+                }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No tienes reservas activas"));
-          }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "No tienes reservas activas",
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  );
+                }
 
-          final reservas = snapshot.data!.docs;
+                final reservas = snapshot.data!.docs;
 
-          return ListView.builder(
-            itemCount: reservas.length,
-            itemBuilder: (context, index) {
-              final reserva = reservas[index];
-              final local = reserva['nombreLocal'] ?? 'Local desconocido';
-              final fecha = reserva['fecha'] ?? 'Sin fecha';
-              final hora = reserva['hora'] ?? 'Sin hora';
+                return ListView.builder(
+                  itemCount: reservas.length,
+                  itemBuilder: (context, index) {
+                    final reserva = reservas[index];
+                    final local = reserva['nombreLocal'] ?? 'Local desconocido';
+                    final fecha = reserva['fecha'] ?? 'Sin fecha';
+                    final hora = reserva['hora'] ?? 'Sin hora';
 
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  leading: const Icon(Icons.event_available, color: Colors.blue),
-                  title: Text("Reserva en $local"),
-                  subtitle: Text("Fecha: $fecha\nHora: $hora"),
-                ),
-              );
-            },
-          );
-        },
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      color: Colors.white,
+                      child: ListTile(
+                        leading: const Icon(Icons.event_available, color: Color(0xFFC89B65)),
+                        title: Text("Reserva en $local", style: const TextStyle(color: Colors.black)),
+                        subtitle: Text(
+                          "Fecha: $fecha\nHora: $hora",
+                          style: const TextStyle(color: Colors.black87),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -18,50 +18,55 @@ class _PantallaInicioState extends State<PantallaInicio> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _construirAppBar(),
-      body: _construirContenido(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _paginaActual,
-        onTap: (index) => setState(() => _paginaActual = index),
-        selectedItemColor: Colors.blue,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Reservas'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+      backgroundColor: const Color(0xFF2C2C2C),
+      body: Column(
+        children: [
+          const Divider(height: 1, color: Color(0xFFBDBDBD)),
+          Expanded(child: _construirContenido()),
+        ],
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Divider(height: 1, color: Color(0xFFBDBDBD)),
+          BottomNavigationBar(
+            currentIndex: _paginaActual,
+            onTap: (index) => setState(() => _paginaActual = index),
+            selectedItemColor: const Color(0xFFC89B65),
+            unselectedItemColor: Colors.grey,
+            backgroundColor: const Color(0xFF212121),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+              BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Reservas'),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+            ],
+          ),
         ],
       ),
     );
   }
 
   PreferredSizeWidget? _construirAppBar() {
-    switch (_paginaActual) {
-      case 0:
-        return AppBar(
-          title: const Text('Bienvenido!'),
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: 'Cerrar sesión',
-              onPressed: _cerrarSesion,
-            ),
-          ],
-        );
-      case 1:
-        return AppBar(
-          title: const Text('Mis reservas'),
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-        );
-      case 2:
-        return AppBar(
-          title: const Text('Perfil'),
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-        );
-      default:
-        return null;
-    }
+    return AppBar(
+      title: Text(
+        _paginaActual == 0
+            ? 'APPBarber!'
+            : _paginaActual == 1
+                ? 'Mis reservas'
+                : 'Perfil',
+      ),
+      backgroundColor: const Color(0xFF212121),
+      foregroundColor: Colors.white,
+      actions: _paginaActual == 0
+          ? [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Cerrar sesión',
+                onPressed: _confirmarCerrarSesion,
+              ),
+            ]
+          : null,
+    );
   }
 
   Widget _construirContenido() {
@@ -77,11 +82,31 @@ class _PantallaInicioState extends State<PantallaInicio> {
     }
   }
 
-  void _cerrarSesion() async {
-    await FirebaseAuth.instance.signOut();
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/');
-    }
+  void _confirmarCerrarSesion() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Cerrar sesión"),
+        content: const Text("¿Estás seguro de que deseas cerrar sesión?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancelar"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC89B65)),
+            onPressed: () async {
+              Navigator.pop(context); // cerrar diálogo
+              await FirebaseAuth.instance.signOut();
+              if (mounted) {
+                Navigator.pushReplacementNamed(context, '/');
+              }
+            },
+            child: const Text("Cerrar sesión", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -128,19 +153,30 @@ class _InicioContenido extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
+        color: Colors.white,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              Icon(icono, size: 40, color: Colors.blue),
+              Icon(icono, size: 40, color: Color(0xFFC89B65)),
               const SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(titulo, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(subtitulo, style: const TextStyle(color: Colors.grey)),
+                  Text(
+                    titulo,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF212121),
+                    ),
+                  ),
+                  Text(
+                    subtitulo,
+                    style: const TextStyle(color: Color(0xFF2C2C2C)),
+                  ),
                 ],
               )
             ],

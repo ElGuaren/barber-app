@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase/screens/login_page.dart';
 import 'package:flutter_firebase/screens/register_page.dart';
-
+import 'package:flutter_firebase/screens/recuperar_contrasena_page.dart'; // ← Asegúrate de que la ruta sea correcta
 
 /* Importar librerias de firebase */
 import 'package:firebase_core/firebase_core.dart';
@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
+        '/recuperar': (context) => const RecuperarContrasenaPage(), // ← ¡Esta línea era la que faltaba!
       },
     );
   }
