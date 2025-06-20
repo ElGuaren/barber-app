@@ -18,6 +18,8 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _verPassword = false;
   bool _verConfirmar = false;
 
+  String _tipoUsuario = 'cliente'; // valor por defecto
+
   @override
   void dispose() {
     _nombreController.dispose();
@@ -52,9 +54,11 @@ class _RegisterPageState extends State<RegisterPage> {
       await FirebaseFirestore.instance.collection('usuarios').doc(cred.user!.uid).set({
         'nombre': nombre,
         'email': email,
+        'tipo': _tipoUsuario, // Guardamos si es barbero o cliente
       });
 
       _mostrarMensaje("Registro exitoso");
+
       if (mounted) Navigator.pushReplacementNamed(context, '/');
     } on FirebaseAuthException catch (e) {
       _mostrarMensaje(e.message ?? "Error desconocido");
@@ -96,49 +100,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     TextField(
                       controller: _nombreController,
-                      decoration: InputDecoration(
-                        labelText: 'Nombre completo',
-                        prefixIcon: const Icon(Icons.person),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                      decoration: _inputStyle("Nombre completo", Icons.person),
                     ),
                     const SizedBox(height: 16),
 
                     TextField(
                       controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Correo electrónico',
-                        prefixIcon: const Icon(Icons.email),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                      decoration: _inputStyle("Correo electrónico", Icons.email),
                     ),
                     const SizedBox(height: 16),
 
                     TextField(
                       controller: _passwordController,
                       obscureText: !_verPassword,
-                      decoration: InputDecoration(
-                        labelText: 'Contraseña',
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
+                      decoration: _inputStyle(
+                        "Contraseña",
+                        Icons.lock,
+                        iconAdicional: IconButton(
                           icon: Icon(_verPassword ? Icons.visibility_off : Icons.visibility),
                           onPressed: () => setState(() => _verPassword = !_verPassword),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),
@@ -147,20 +127,29 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextField(
                       controller: _confirmarPasswordController,
                       obscureText: !_verConfirmar,
-                      decoration: InputDecoration(
-                        labelText: 'Confirmar contraseña',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
+                      decoration: _inputStyle(
+                        "Confirmar contraseña",
+                        Icons.lock_outline,
+                        iconAdicional: IconButton(
                           icon: Icon(_verConfirmar ? Icons.visibility_off : Icons.visibility),
                           onPressed: () => setState(() => _verConfirmar = !_verConfirmar),
                         ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide.none,
-                        ),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    DropdownButtonFormField<String>(
+                      value: _tipoUsuario,
+                      items: const [
+                        DropdownMenuItem(value: 'cliente', child: Text('Cliente')),
+                        DropdownMenuItem(value: 'barbero', child: Text('Barbero')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _tipoUsuario = value);
+                        }
+                      },
+                      decoration: _inputStyle("Tipo de usuario", Icons.person_outline),
                     ),
                     const SizedBox(height: 24),
 
@@ -181,13 +170,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        "¿Ya tienes cuenta? Inicia sesión",
-                        style: TextStyle(color: Color(0xFF212121)),
-                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("¿Ya tienes cuenta? Inicia sesión"),
                     ),
                   ],
                 ),
@@ -195,6 +179,20 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  InputDecoration _inputStyle(String label, IconData icono, {Widget? iconAdicional}) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icono),
+      suffixIcon: iconAdicional,
+      filled: true,
+      fillColor: Colors.grey[200],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(50),
+        borderSide: BorderSide.none,
       ),
     );
   }

@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
-        '/recuperar': (context) => const RecuperarContrasenaPage(), // ← ¡Esta línea era la que faltaba!
+        '/recuperar': (context) => const RecuperarContrasenaPage(), 
       },
     );
   }

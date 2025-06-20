@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'pagina_inicio.dart';
+
+import 'pagina_inicio.dart';           // Para clientes
+import 'pagina_inicio_barbero.dart';  // Para barberos
+import 'crear_local_page.dart';       // NUEVO: para barberos sin local
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -32,14 +36,12 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PantallaInicio()),
-      );
+
+      await _verificarTipoYRedirigir(cred.user!.uid);
     } on FirebaseAuthException catch (e) {
       _mostrarMensaje("Error: ${e.message}");
     }
@@ -50,21 +52,43 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
+      final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      final cred = await FirebaseAuth.instance.signInWithCredential(credential);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PantallaInicio()),
-      );
+      await _verificarTipoYRedirigir(cred.user!.uid);
     } catch (e) {
       _mostrarMensaje("Error al iniciar sesión con Google: $e");
+    }
+  }
+
+  Future<void> _verificarTipoYRedirigir(String uid) async {
+    final doc = await FirebaseFirestore.instance.collection('usuarios').doc(uid).get();
+    final datos = doc.data();
+    final tipo = datos?['tipo'] ?? 'cliente';
+
+    if (tipo == 'barbero') {
+      final idLocal = datos?['idLocal'] ?? '';
+      if (idLocal.isEmpty) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const CrearLocalPage()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const PantallaInicioBarbero()),
+        );
+      }
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const PantallaInicio()),
+      );
     }
   }
 
@@ -96,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Icon(Icons.account_circle, size: 64, color: Color(0xFFC89B65)),
                     const SizedBox(height: 16),
                     const Text(
-                      "Inicio de Sesión",
+                      "¡Bienvenido a APPBarber!",
                       style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF212121)),
                     ),
                     const SizedBox(height: 24),
@@ -104,34 +128,19 @@ class _LoginPageState extends State<LoginPage> {
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        labelText: "Correo electrónico",
-                        prefixIcon: const Icon(Icons.email),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                      decoration: _inputStyle("Correo electrónico", Icons.email),
                     ),
                     const SizedBox(height: 16),
 
                     TextField(
                       controller: _passwordController,
                       obscureText: !_mostrarClave,
-                      decoration: InputDecoration(
-                        labelText: "Contraseña",
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
+                      decoration: _inputStyle(
+                        "Contraseña",
+                        Icons.lock,
+                        iconAdicional: IconButton(
                           icon: Icon(_mostrarClave ? Icons.visibility : Icons.visibility_off),
                           onPressed: () => setState(() => _mostrarClave = !_mostrarClave),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),
@@ -180,6 +189,20 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  InputDecoration _inputStyle(String label, IconData icono, {Widget? iconAdicional}) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icono),
+      suffixIcon: iconAdicional,
+      filled: true,
+      fillColor: Colors.grey[200],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(50),
+        borderSide: BorderSide.none,
       ),
     );
   }

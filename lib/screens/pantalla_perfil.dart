@@ -24,7 +24,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     if (doc.exists) {
       setState(() {
         nombreUsuario = doc['nombre'];
-        telefonoUsuario = doc['telefono'];
+        telefonoUsuario = doc.data()?['telefono'] ?? ''; // <- corrección aquí
         _nombreController.text = nombreUsuario ?? '';
         _telefonoController.text = telefonoUsuario ?? '';
       });
@@ -140,7 +140,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
                               ),
                             )
                           : Text(
-                              telefonoUsuario ?? 'No registrado',
+                              telefonoUsuario?.isNotEmpty == true ? telefonoUsuario! : 'No registrado',
                               style: const TextStyle(color: Colors.white, fontSize: 16),
                             ),
                     ),
